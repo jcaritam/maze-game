@@ -1,24 +1,30 @@
 using TMPro;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 public class Militar : MonoBehaviour
 {
     public float velMov = 2.0f;
     public float velRota = 50.0f;
     public float ejeX, ejeY;
     public TextMeshProUGUI textoLlave;
-
+    public TextMeshProUGUI messageText;
     private int llave;
     private Animator animator;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    public Image barraVida;
+    private float vida;
     void Start()
     {
         animator = GetComponent<Animator>();
         textoLlave.text = "0";
         llave = 0;
+        vida = 100;
+        barraVida.fillAmount = vida / 100;
+        messageText = GameObject.Find("MessageText").GetComponent<TextMeshProUGUI>();
+        messageText.gameObject.SetActive(false);
     }
 
-    // Update is called once per frame
     void Update()
     {
         ejeX = Input.GetAxis("Horizontal");
@@ -29,21 +35,6 @@ public class Militar : MonoBehaviour
 
         animator.SetFloat("ejeX", ejeX);
         animator.SetFloat("ejeY", ejeY);
-        
-        float mouseX = Input.GetAxis("Mouse X");
-        transform.Rotate(0, mouseX * velRota * Time.deltaTime, 0);
-
-        animator.SetFloat("ejeX", ejeX);
-        animator.SetFloat("ejeY", ejeY);
-
-        if (Input.GetKey(KeyCode.Q))
-        {
-            transform.Rotate(0, -velRota * Time.deltaTime, 0);
-        }
-        if (Input.GetKey(KeyCode.E))
-        {
-            transform.Rotate(0, velRota * Time.deltaTime, 0);
-        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -54,6 +45,45 @@ public class Militar : MonoBehaviour
             GetComponent<AudioSource>().Play();
             llave++;
             textoLlave.text = llave.ToString();
+            if (llave >= 5)
+            {
+                messageText.gameObject.SetActive(true);
+            }
+        }
+        if (other.tag == "Vida")
+        {
+            Destroy(other.gameObject);
+            GetComponent<AudioSource>().Play();
+            vida = vida + 20;
+            barraVida.fillAmount = vida / 100;
+        }
+
+
+    }
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider.tag == "zombies")
+        {
+            vida = vida - 20;
+            barraVida.fillAmount = vida / 100;
+            if (vida <= 0)
+            { SceneManager.LoadScene(2); }
+        }
+        if (collision.collider.tag == "door")
+        {
+            if (llave >= 5)
+            {
+                collision.gameObject.SetActive(false);
+                Destroy(collision.gameObject, 0.1f);
+                messageText.text = "¡Felicidades! Superaste el nivel";
+                messageText.fontSize = 35;
+                messageText.gameObject.SetActive(true);
+            }
+            else
+            {
+                Debug.Log("Aún faltan llaves");
+            }
         }
     }
+
 }

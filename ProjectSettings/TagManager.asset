@@ -6,6 +6,9 @@ TagManager:
   tags:
   - Llaves
   - Vida
+  - zombies
+  - door
+  - zombie_out
   layers:
   - Default
   - TransparentFX
